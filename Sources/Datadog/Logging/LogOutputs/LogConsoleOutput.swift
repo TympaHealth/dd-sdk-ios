@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import OSLog
 
 /// Formats logs printed to console.
 internal protocol ConsoleLogFormatter {
@@ -15,13 +16,11 @@ internal protocol ConsoleLogFormatter {
 internal struct LogConsoleOutput: LogOutput {
     private let logBuilder: LogBuilder
     private let formatter: ConsoleLogFormatter
-    private let printingFunction: (String) -> Void
 
     init(
         logBuilder: LogBuilder,
         format: Logger.Builder.ConsoleLogFormat,
-        timeZone: TimeZone,
-        printingFunction: @escaping (String) -> Void = { consolePrint($0) }
+        timeZone: TimeZone
     ) {
         switch format {
         case .short:
@@ -34,12 +33,24 @@ internal struct LogConsoleOutput: LogOutput {
             self.formatter = JSONLogFormatter(prefix: prefix)
         }
         self.logBuilder = logBuilder
-        self.printingFunction = printingFunction
     }
 
     func writeLogWith(level: LogLevel, message: String, date: Date, attributes: LogAttributes, tags: Set<String>) {
         let log = logBuilder.createLogWith(level: level, message: message, date: date, attributes: attributes, tags: tags)
-        printingFunction(formatter.format(log: log))
+        let message = formatter.format(log: log)
+        let logType = logType(for: level)
+        os_log("%{public}@", log: .default, type: logType, message)
+    }
+
+    private func logType(for level: LogLevel) -> OSLogType {
+        switch level {
+        case .debug:    return .debug
+        case .info:     return .info
+        case .notice:   return .default
+        case .warn:     return .error
+        case .error:    return .error
+        case .critical: return .fault
+        }
     }
 }
 

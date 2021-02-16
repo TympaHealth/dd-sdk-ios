@@ -35,7 +35,6 @@ internal var userLogger = createNoOpSDKUserLogger()
 
 internal func createSDKDeveloperLogger(
     configuration: InternalLoggerConfiguration,
-    consolePrintFunction: @escaping (String) -> Void = { consolePrint($0) },
     dateProvider: DateProvider = SystemDateProvider(),
     timeZone: TimeZone = .current
 ) -> Logger? {
@@ -54,8 +53,7 @@ internal func createSDKDeveloperLogger(
             carrierInfoProvider: configuration.carrierInfoProvider
         ),
         format: .shortWith(prefix: "🐶 → "),
-        timeZone: timeZone,
-        printingFunction: consolePrintFunction
+        timeZone: timeZone
     )
 
     return Logger(
@@ -94,8 +92,7 @@ internal func createSDKUserLogger(
             carrierInfoProvider: configuration.carrierInfoProvider
         ),
         format: .shortWith(prefix: "[DATADOG SDK] 🐶 → "),
-        timeZone: timeZone,
-        printingFunction: consolePrintFunction
+        timeZone: timeZone
     )
 
     return Logger(
